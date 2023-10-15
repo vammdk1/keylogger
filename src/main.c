@@ -74,11 +74,11 @@ LRESULT CALLBACK hookCallback(int code, WPARAM wParam, LPARAM lParam) {
                             extend = 0x100; //Set extend bit
                             break;
                     }
-                    if (GetKeyNameText((info->scanCode | extend) * 0x10000, buffer + 1, sizeof(buffer) - 1) > 0) {
+                    if (GetKeyNameText((info->scanCode | extend) * 0x10000, buffer + 1, sizeof(buffer) - 2) > 0) {
                         res = 1;
                         buffer[0] = '[';
-                        buffer[strlen(buffer)] = '\0';
-                        buffer[strlen(buffer) - 1] = ']';
+                        buffer[strlen(buffer) + 1] = '\0';
+                        buffer[strlen(buffer)] = ']';
                     }
                 }
             }
